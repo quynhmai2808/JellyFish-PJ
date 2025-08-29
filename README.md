@@ -30,14 +30,17 @@ Anzahl aktiver Kunden / Filialen
 Vergleich nach Berichtsmuster: Muster A vs Muster B vs Muster C.
 Drill-down-Funktion: von Gesamtübersicht → Detail pro Produkt/Filiale.
 Dynamische Filter: Auswahl nach mehreren Kriterien (Filiale + Monat + Berichtsmuster).
+
 🔹 4. Berichtsexport & Teilen
 Export als PDF/Excel.
 Automatische Berichtserstellung mit rmarkdown (z. B. monatlich pro Kunde).
 Download-Button: Kunden können Berichte direkt herunterladen.
+
 🔹 5. Kundenmanagement (optional erweitert)
 Login / Benutzer-Authentifizierung: jeder Kunde sieht nur seine eigenen Daten.
 Rechteverwaltung (Admin / Kunde).
 Download-Historie protokollieren.
+
 🔹 6. Technische Umsetzung
 Shiny + shinydashboard / bslib → modernes UI.
 DT-Package → interaktive Tabellen mit Filter & Suche.
