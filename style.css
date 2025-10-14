@@ -1,0 +1,30 @@
+/* Đổi màu nền dashboard */
+.content-wrapper, .right-side {
+  background-color: #f4f6f9;
+}
+
+/* Tiêu đề hộp */
+.box-header {
+  background-color: #004080;
+  color: white;
+  font-weight: bold;
+}
+
+/* Value box tùy chỉnh */
+.small-box.bg-green {
+  background-color: #28a745 !important;
+}
+
+.small-box.bg-blue {
+  background-color: #007bff !important;
+}
+
+.small-box.bg-yellow {
+  background-color: #ffc107 !important;
+}
+
+/* Bảng dữ liệu */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+  margin-bottom: 10px;
+}
