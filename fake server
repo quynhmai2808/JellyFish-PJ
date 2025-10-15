@@ -1,0 +1,43 @@
+server <- function(input, output, session) {
+
+  # Các KPI giả lập
+  output$kpi_sales <- renderValueBox({
+    valueBox(value = "123,456", subtitle = "Sales Volume", color = "aqua")
+  })
+  
+  output$kpi_revenue <- renderValueBox({
+    valueBox(value = "2,345,678 €", subtitle = "Revenue", color = "green")
+  })
+  
+  output$kpi_items <- renderValueBox({
+    valueBox(value = "78,900", subtitle = "Total Items", color = "yellow")
+  })
+  
+  output$kpi_stores <- renderValueBox({
+    valueBox(value = "2,300", subtitle = "Store Count", color = "red")
+  })
+  
+  # Biểu đồ giả lập
+  output$trend_plot <- renderPlotly({
+    plot_ly(
+      x = ~1:10,
+      y = ~cumsum(rnorm(10, 100, 20)),
+      type = 'scatter',
+      mode = 'lines+markers',
+      line = list(color = 'steelblue')
+    ) %>% layout(title = paste("Sales Trend -", input$report_name))
+  })
+  
+  # Bảng giả lập
+  output$comparison_table <- renderDT({
+    datatable(
+      data.frame(
+        Week = paste0("W", 35:40),
+        Sales = sample(10000:20000, 6),
+        Revenue = sample(100000:300000, 6),
+        Change = paste0(sample(-10:10, 6), "%")
+      ),
+      options = list(pageLength = 6)
+    )
+  })
+}
