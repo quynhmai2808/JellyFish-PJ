@@ -49,45 +49,34 @@ library(shiny)
 library(shinydashboard)
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Customer Report Dashboard"),
+  dashboardHeader(title = "PMI Report Dashboard"),
   dashboardSidebar(
-    sidebarMenu(
-      menuItem("Overview", tabName = "overview", icon = icon("home")),
-      menuItem("Detail Report", tabName = "report", icon = icon("file")),
-      menuItem("Settings", tabName = "settings", icon = icon("cog"))
-    )
+    selectInput("retailer", "Retailer:", choices = c("Retailer A", "Retailer B", "Retailer C")),
+    selectInput("report_name", "Report Name:", choices = c("PMG", "OTP", "CIG", "ECIG")),
+    selectInput("measure", "Report Measure:", choices = c("Sales Volume", "Revenue", "Total Item", "Store Count")),
+    selectInput("week", "Week:", choices = paste0("Week ", 1:52))
   ),
   dashboardBody(
-    tabItems(
-      tabItem(tabName = "overview",
-              fluidRow(
-                valueBoxOutput("vb_revenue", width = 4),
-                valueBoxOutput("vb_sticks", width = 4),
-                valueBoxOutput("vb_stores", width = 4)
-              ),
-              fluidRow(
-                box(title = "Revenue Trend", width = 6, status = "primary",
-                    solidHeader = TRUE, plotOutput("plot_revenue", height = 250)),
-                box(title = "Top Products", width = 6, status = "info",
-                    solidHeader = TRUE, plotOutput("plot_top_products", height = 250))
-              )
-      ),
-      tabItem(tabName = "report",
-              fluidRow(
-                box(title = "Filters", width = 12, status = "warning",
-                    selectInput("customer", "Customer", choices = NULL),
-                    selectInput("report_type", "Report Type", choices = NULL)
-                )
-              ),
-              fluidRow(
-                box(title = "Report Table", width = 12, status = "success",
-                    DT::dataTableOutput("table_data"))
-              )
-      ),
-      tabItem(tabName = "settings",
-              h3("Dashboard Settings Area"),
-              p("This is where you can adjust filters, themes or other configs.")
-      )
+    # Gọi file CSS
+    tags$head(
+      tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
+    ),
+
+    fluidRow(
+      valueBoxOutput("kpi_sales", width = 3),
+      valueBoxOutput("kpi_revenue", width = 3),
+      valueBoxOutput("kpi_items", width = 3),
+      valueBoxOutput("kpi_stores", width = 3)
+    ),
+
+    fluidRow(
+      box(width = 12, title = "Sales Trend", status = "primary", solidHeader = TRUE,
+          plotlyOutput("trend_plot"))
+    ),
+
+    fluidRow(
+      box(width = 12, title = "Weekly Comparison Table", status = "info", solidHeader = TRUE,
+          DTOutput("comparison_table"))
     )
   )
 )
