@@ -80,3 +80,49 @@ ui <- dashboardPage(
     )
   )
 )
+
+library(shiny)
+library(plotly)
+
+ui <- fluidPage(
+  titlePanel("PMI QC REPORT"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("retailer", "Retailer", choices = c("Metro")),
+      selectInput("report_name", "Report Name", choices = c("PMG")),
+      numericInput("year", "Year", value = 2025),
+      sliderInput("week", "Week", min = 1, max = 52, value = 40),
+      sliderInput("selected_weeks", "Selected Weeks", min = 1, max = 52, value = c(1, 40))
+    ),
+    
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Overview",
+          fluidRow(
+            column(3, valueBoxOutput("kpi_sales")),
+            column(3, valueBoxOutput("kpi_revenue")),
+            column(3, valueBoxOutput("kpi_items")),
+            column(3, valueBoxOutput("kpi_stores"))
+          ),
+          fluidRow(
+            column(6, plotlyOutput("heatmap")),
+            column(6,
+              fluidRow(
+                column(6, plotlyOutput("plot_sales")),
+                column(6, plotlyOutput("plot_revenue"))
+              ),
+              fluidRow(
+                column(6, plotlyOutput("plot_total_sales")),
+                column(6, plotlyOutput("plot_total_count"))
+              )
+            )
+          )
+        ),
+        tabPanel("Summary",
+          h3("Summary Panel – Inhalt folgt")
+        )
+      )
+    )
+  )
+)
