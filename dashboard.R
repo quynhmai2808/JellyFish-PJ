@@ -216,5 +216,77 @@ server <- function(input, output, session) {
   )
 }
 
+---------------------------------------------------------------------------------------------------
+mainUI <- function(id) {
+  ns <- NS(id)
+  fluidPage(
+    # Sidebar Inputs
+    sidebarLayout(
+      sidebarPanel(
+        selectInput(ns("retailer"), "Retailer", choices = c("Metro")),
+        selectInput(ns("report_name"), "Report Name", choices = c("PMG")),
+        numericInput(ns("year"), "Year", value = 2025),
+        sliderInput(ns("week"), "Week", min = 1, max = 52, value = 40),
+        sliderInput(ns("selected_weeks"), "Selected Weeks", min = 1, max = 52, value = c(1, 40))
+      ),
+      
+      mainPanel(
+        navbarPage("PMI QC REPORT",
+          tabPanel("Overview",
+            fluidRow(
+              column(3, valueBoxOutput(ns("kpi_sales"))),
+              column(3, valueBoxOutput(ns("kpi_revenue"))),
+              column(3, valueBoxOutput(ns("kpi_items"))),
+              column(3, valueBoxOutput(ns("kpi_stores")))
+            ),
+            fluidRow(
+              column(6,
+                box(title = "Heatmap", width = NULL, plotlyOutput(ns("heatmap")))
+              ),
+              column(6,
+                fluidRow(
+                  column(6, box(title = "Sales Trend", width = NULL, plotlyOutput(ns("plot_sales")))),
+                  column(6, box(title = "Revenue Trend", width = NULL, plotlyOutput(ns("plot_revenue"))))
+                ),
+                fluidRow(
+                  column(6, box(title = "Total Sales", width = NULL, plotlyOutput(ns("plot_total_sales")))),
+                  column(6, box(title = "Item Count", width = NULL, plotlyOutput(ns("plot_item_count"))))
+                )
+              )
+            )
+          ),
+          
+          tabPanel("Summary",
+            h3("Summary Panel – Inhalt folgt")
+          )
+        )
+      )
+    )
+  )
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Run the app
 shinyApp(ui, server)
