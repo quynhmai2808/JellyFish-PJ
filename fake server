@@ -41,3 +41,47 @@ server <- function(input, output, session) {
     )
   })
 }
+
+----------------------------------------------------------------------------------
+mainServer <- function(id) {
+  moduleServer(id, function(input, output, session) {
+    # KPI-Boxen
+    output$kpi_sales <- renderValueBox({
+      valueBox("1.2M", "Sales Volume", icon = icon("shopping-cart"), color = "blue")
+    })
+    output$kpi_revenue <- renderValueBox({
+      valueBox("€3.4M", "Revenue", icon = icon("euro-sign"), color = "green")
+    })
+    output$kpi_items <- renderValueBox({
+      valueBox("45K", "Total Items", icon = icon("boxes"), color = "yellow")
+    })
+    output$kpi_stores <- renderValueBox({
+      valueBox("120", "Store Count", icon = icon("store"), color = "orange")
+    })
+
+    # Dummy-Daten
+    positions <- 1:7
+    sales <- c(100, 150, 130, 170, 160, 180, 200)
+    revenue <- c(200, 250, 230, 270, 260, 280, 300)
+
+    output$heatmap <- renderPlotly({
+      plot_ly(z = matrix(sample(1:100, 49, replace = TRUE), nrow = 7), type = "heatmap", colorscale = "Viridis")
+    })
+
+    output$plot_sales <- renderPlotly({
+      plot_ly(x = positions, y = sales, type = 'scatter', mode = 'lines+markers')
+    })
+
+    output$plot_revenue <- renderPlotly({
+      plot_ly(x = positions, y = revenue, type = 'scatter', mode = 'lines+markers')
+    })
+
+    output$plot_total_sales <- renderPlotly({
+      plot_ly(x = positions, y = sales + revenue, type = 'scatter', mode = 'lines+markers')
+    })
+
+    output$plot_item_count <- renderPlotly({
+      plot_ly(x = positions, y = sales * 2, type = 'scatter', mode = 'lines+markers')
+    })
+  })
+}
