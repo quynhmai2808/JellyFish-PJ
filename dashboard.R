@@ -1,3 +1,5 @@
+# UI ----------------------------------------------------------------------
+
 map_UI <- function(id) {
   ns <- NS(id)
   
@@ -8,24 +10,47 @@ map_UI <- function(id) {
       sidebarMenu(
         menuItem("Inputs", tabName = "inputs", icon = icon("sliders-h")),
         selectInput(ns("retailer"), "Retailer", choices = c("EXXON")),
-        selectInput(ns("report_name"), "Report Name", choices = c("PMG")),
+        selectInput(ns("report_name"), "Report Name", choices = names(data_by_group), selected = "PMG"),
         numericInput(ns("year"), "Year", value = 2025),
         selectInput(ns("week"), "Week", choices = NULL), #dynamic
-        sliderInput(ns("selected_weeks"), "Selected Weeks", min = 1, max = 52, value = c(30, 31))
+        # Show data button
+        actionButton(ns("show_data"), "Show Data", icon = icon("table")),
+        hr(),
+        selectizeInput(ns("selected_weeks"), "Selected Multiple Weeks", choices = sprintf("%02d", 1:52), multiple = TRUE, 
+                       options = list(placeholder = "Choose one or more weeks...",
+                                      plugins = list("Reset"), maxItems = 10)),
+        actionButton(ns("show_report"), "Show Report", icon = icon("chart-line"))
       )
     ),
     
     dashboardBody(
       tabBox(
         id = "tabs", width = 12,
+        
+        # --- Data table + Value Box ---
+        
         tabPanel("Overview",
-                 fluidRow(
-                   column(6, valueBoxOutput(ns("kpi_sales"))),
-                   column(6, valueBoxOutput(ns("kpi_revenue"))),
-                   column(6, valueBoxOutput(ns("kpi_items"))),
-                   column(6, valueBoxOutput(ns("kpi_stores")))
+                 # Show data
+                 conditionalPanel(
+                   condition = sprintf("input['%s'] > 0 ", ns("show_data")),
+                   fluidRow(
+                     column(6, valueBoxOutput(ns("kpi_sales"))),
+                     column(6, valueBoxOutput(ns("kpi_revenue"))),
+                     column(6, valueBoxOutput(ns("kpi_items"))),
+                     column(6, valueBoxOutput(ns("kpi_stores")))
+                    )
                  ),
                  hr(),
+                 h4("Weekly Data Summary"),
+                 dataTableOutput(ns("table_data"))
+          )
+        ),
+                 
+        # --- Heatmap + Trend charts
+        tabPanel("Weekly Report",
+                 # Show report
+                 conditionalPanel(
+                   condition = sprintf("input['%s'] >0 ", ns("show_report")),
                  h4("Weekly QC Trend"),
                  fluidRow(
                    column(4, box(title = "Heatmap", width = NULL, plotlyOutput(ns("heatmap")))),
@@ -35,17 +60,14 @@ map_UI <- function(id) {
                             column(5, box(title = "Revenue Trend", width = NULL, plotlyOutput(ns("plot_revenue"))))
                           ),
                           fluidRow(
-                            column(5, box(title = "Total Sales", width = NULL, plotlyOutput(ns("plot_total_sales")))),
+                            column(5, box(title = "Stores Count", width = NULL, plotlyOutput(ns("plot_stores_count")))),
                             column(5, box(title = "Item Count", width = NULL, plotlyOutput(ns("plot_item_count"))))
                           )
                    )
                  )
-        ),
-        tabPanel("Summary",
-                 h4("Data"),
-                 dataTableOutput(ns("table_data"))
+                )
         )
-      )
     )
   )
 }
+
