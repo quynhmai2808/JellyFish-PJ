@@ -200,7 +200,9 @@ get_volume_column <- function(report_type) {
 # and additional derived columns have been added: Week_Label & Month.
 read_report_data <- function(retailer, report_type, year, weeks_selected) {
   
-  weeks_selected <- as.integer(week_selected)
+  # FIX #4: bien goc bi go nham thanh "week_selected" (thieu chu "s"),
+  # khien ham nay luon bao loi "object 'week_selected' not found".
+  weeks_selected <- as.integer(weeks_selected)
   
   req_rows <- file_index[
     file_index$retailer == retailer &
@@ -216,7 +218,12 @@ read_report_data <- function(retailer, report_type, year, weeks_selected) {
     raw_df <- readr::read_delim(row$file_path, delim = ";", escape_double = FALSE,
                          trim_ws = TRUE, show_col_types = FALSE)
     std_df <- standardize_columns(as.data.frame(raw_df), report_type)
-    std_df$Week_Label <- row$week
+    # FIX #5: ban truoc chi co dong duoi day, gan NHAM so tuan (46) vao
+    # Week_Label (dung ra phai la nhan dang "2025-W46"), va THIEU HAN cot
+    # Week rieng ma dashboard.R can de group theo tung tuan
+    # (df_raw$Week / sub_df$Week trong multi_weeks_data()).
+    std_df$Week <- row$week
+    std_df$Week_Label <- row$week_label
     std_df$Month <- iso_week_to_month(row$year, row$week)
     std_df
   })
