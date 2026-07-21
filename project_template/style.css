@@ -1,0 +1,97 @@
+/* styles.css */
+body {
+  background-color: #f8f8f8;
+  font-family: 'Roboto', sans-serif;
+}
+
+.skin-blue .main-header .logo {
+  background-color: #800080; /* Purple header */
+  color: white;
+  font-weight: bold;
+}
+
+.skin-blue .main-header .navbar {
+  background-color: #800080; /* Purple navbar */
+}
+
+.skin-blue .sidebar-menu > li.active > a {
+  background-color: #993399; /* Darker purple for active menu */
+  color: white;
+}
+
+.btn-primary {
+  background-color: #800080;
+  border-color: #800080;
+}
+
+.box {
+  border-top: 3px solid #800080; /* Purple accent on boxes */
+}
+
+
+/*KPI Boxes with Brand Colors */
+
+/* General box styling */
+.small-box {
+  border: 2px solid #800080; /* Purple frame for all boxes */
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 15px;
+  min-height: 120px; /* Reduce height */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Inner text styling */
+.small-box .inner h3 {
+  font-size: 24px; /* Smaller font */
+  margin: 0;
+}
+
+.small-box .inner p {
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Icon styling */
+.small-box .icon {
+  font-size: 40px;
+  opacity: 0.3;
+}
+
+/* Custom colors */
+.bg-lightpurple {
+  background-color: #d8bfe6 !important;
+  color: #4B0082 !important;
+}
+
+.bg-white {
+  background-color: #fff !important;
+  color: #800080 !important;
+}
+
+.bg-purple {
+  background-color: #800080 !important;
+  color: #fff !important;
+}
+
+.bg-black {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+/* Style plot */
+
+.skinny-box {
+  border: 1px solid #ccc;
+  padding: 6px;
+  margin-bottom: 8px;
+  background: #fff;
+}
+.skinny-box h5 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: bold;
+}
+
