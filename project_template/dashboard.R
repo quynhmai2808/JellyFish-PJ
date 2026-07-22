@@ -12,7 +12,7 @@ YELLOW_THRESHOLD <- 2   # 2 < |diff%| <= 4 -> YELLOW
 
 # UI ----------------------------------------------------------------------
 
-map_UI <- function(id, data_by_group = NULL) {
+map_UI <- function(id) {
   ns <- NS(id)
 
   dashboardPage(
@@ -24,9 +24,6 @@ map_UI <- function(id, data_by_group = NULL) {
         menuItem("Inputs", tabName = "inputs", icon = icon("sliders-h")),
         
         # Retailer: Scan dynamic data from the entire data directory (see data.R).
-        # FIX #3: ten ham dung la get_retailers() (so nhieu), truoc day goi
-        # nham get_retailer() (so it) -> khong ton tai, khien map_UI() loi
-        # ngay luc app khoi dong.
         selectInput(ns("retailer"), "Retailer", choices = get_retailers()),
                     # choices = c("EXXON")
                     # choices = if (!is.null(data_by_group)) names(data_by_group) else character(0)),
@@ -84,10 +81,7 @@ map_UI <- function(id, data_by_group = NULL) {
                    
                    h4("Weekly Comparison"),
                    fluidRow(
-                     # FIX #8: id truoc day la "wow_table_data" nhung server
-                     # lai render vao output$wow_table -> KHONG KHOP, bang
-                     # nay se khong bao gio hien thi. Doi lai cho dung id.
-                     box(title = "Week-over-Week Summary", width = NULL, DT::dataTableOutput(ns("wow_table")))),
+                     box(title = "Week-over-Week Summary", width = NULL, DT::dataTableOutput(ns("wow_table_data")))),
                             
                    hr(),
                    h4("Weekly Trend"),
@@ -110,7 +104,7 @@ map_UI <- function(id, data_by_group = NULL) {
 #   
 # SERVER ------------------------------------------------------------------
 
-map_SV <- function (id, data_by_group) {
+map_SV <- function (id) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -146,18 +140,12 @@ map_SV <- function (id, data_by_group) {
       req(input$retailer,input$report_name,input$year)
       weeks <- get_available_weeks(input$retailer,input$report_name,input$year)
       
-      # FIX #6: dieu kien truoc day kiem tra bien "years" (khong ton tai
-      # trong scope nay, con lai tu observer khac) thay vi "weeks" -> loi
-      # "object 'years' not found" moi khi chon xong Year.
       if (length(weeks) > 0) {
         updateSelectInput (session, "week", choices = weeks, selected = tail(weeks,1))
         updateSelectizeInput (session, "selected_weeks", choices = weeks,
                               selected = tail(weeks, min(6, length(weeks))))
       } else {
         updateSelectInput (session, "week", choices = character(0))
-        # FIX #7: dong nay truoc day truyen "choices" 2 LAN
-        # (choices = weeks, choices = character(0)) -> R bao loi
-        # "formal argument matched by multiple actual arguments".
         updateSelectizeInput (session, "selected_weeks", choices = character(0))
       }
     }, ignoreNULL = TRUE)
@@ -243,15 +231,30 @@ map_SV <- function (id, data_by_group) {
     # Aggregated data across multiple weeks (lazy loading: read the data only once for all selected weeks, 
     # since they all belong to the same selected year)
     
+    # ===== Temporary DEBUG =====
+    observeEvent(input$show_report, {
+      message("========== DEBUG: Show Report clicked ==========")
+      message("retailer         = ", paste(input$retailer, collapse = ","))
+      message("report_name      = ", paste(input$report_name, collapse = ","))
+      message("year             = ", paste(input$year, collapse = ","))
+      message("selected_weeks   = ", paste(input$selected_weeks, collapse = ","))
+    }, ignoreInit = TRUE)
+    # ===== END DEBUG =====
+    
+    
     multi_weeks_data <- eventReactive(input$show_report, {
       req(input$retailer, input$report_name, input$year, input$selected_weeks)
       
       vcol <- volume_col()
       df_raw <- read_report_data(input$retailer, input$report_name, input$year, input$selected_weeks)
+      
+      message("DEBUG multi_weeks_data: nrow(df_raw) = ", if (is.null(df_raw)) "NULL" else nrow(df_raw))
+      message("DEBUG multi_weeks_data: unique weeks in df_raw = ", if (is.null(df_raw)) "N/A" else paste(sort(unique(df_raw$Week)), collapse = ","))
+      
       validate(need(!is.null(df_raw), "There are no data for selected weeks"))
       
       # List of weeks
-      weeks_present <- sort(unique(df_raw$Week))
+      weeks_present <- sort(unique(df_raw$week))
       
       rows <- lapply(weeks_present, function(wk) {
         sub_df <- df_raw[df_raw$Week == wk, ]
@@ -265,8 +268,6 @@ map_SV <- function (id, data_by_group) {
         )
       })
       
-      # FIX #9: truoc day goi dplyr::bind_rows() KHONG co tham so, luon tra
-      # ve data rong -> toan bo bieu do/bang tuan phia sau se trong.
       dplyr::bind_rows(rows)
       
     })
@@ -283,10 +284,6 @@ map_SV <- function (id, data_by_group) {
         cur <- df [i, ];
         prev <- df [i-1, ]
         
-        # FIX #10: ten ham go nham "tiblle" -> dung phai la "tibble"
-        # (ham cua package tibble), gay loi "could not find function".
-        # FIX #11: cot du lieu goc la "Total_Volume", truoc day go nham
-        # thanh "Tota_Volume" (thieu chu "l") o ca 2 dong Sales Current/Previous.
         tibble(
           `Current Week` = cur$Week_Label,
           `Previous Week` = prev$Week_Label,
@@ -303,23 +300,19 @@ map_SV <- function (id, data_by_group) {
           `Stores Diff (%)` = pct_diff(cur$Stores_count, prev$Stores_count),
           `Items Diff (%)` = pct_diff(cur$Item_count, prev$Item_count)
         )
+        
+        dplyr::bind_rows(purrr_rows)
       })
-      
-      # FIX #12: truoc day co 1 dong "dplyr::bind_rows()" KHONG THAM SO nam
-      # LAC ben trong lapply (phia sau tibble(...), nen khong bao gio chay
-      # toi vi tibble() da la gia tri return cua function con) - va quan
-      # trong hon la KET QUA CUOI CUNG cua reactive nay chua bao gio duoc
-      # gop lai tu list "purrr_rows" thanh 1 data.frame. Sua bang cach goi
-      # dplyr::bind_rows(purrr_rows) LA DONG CUOI CUNG cua reactive.
-      dplyr::bind_rows(purrr_rows)
     })
     
-    output$wow_table <- DT::renderDT({
+    output$wow_table_data <- DT::renderDT({
+      
+      message("DEBUG: output$wow_table_data is calling")
+      
       df <- wow_table_data()
-      # FIX #13: ten cot khai bao o day ("Volume Diff (%)",...) truoc day
-      # KHONG KHOP voi ten cot thuc te duoc tao trong wow_table_data()
-      # ("Sales Diff (%)",...) -> DT::formatStyle() khong tim thay cot nao
-      # de to mau. Sua lai cho dung ten cot thuc te.
+      
+      message("DEBUG: wow_table_data nrow = ", nrow(df))
+      
       diff_cols <- c("Sales Diff (%)", "Revenue Diff (%)", "Stores Diff (%)", "Items Diff (%)")
       
       dt <- DT::datatable(df,rownames = FALSE,
@@ -341,6 +334,8 @@ map_SV <- function (id, data_by_group) {
     # --- Render Sales Trend plots ---
     
     output$plot_sales <- renderPlotly({
+      
+      message("DEBUG: output$plot_sales is calling")
       
       # If there are no data, req will be stop rendering without throwing exception.
       req(nrow(multi_weeks_data()) > 0)
@@ -423,3 +418,5 @@ map_SV <- function (id, data_by_group) {
   })
   
 }
+
+
